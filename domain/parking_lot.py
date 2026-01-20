@@ -14,7 +14,11 @@ class ParkingLot:
                 return i
         return None
 
-    def park(self, vehicle, ev=False):
+    def park(self, vehicle, ev=False, level=None):
+        # allow caller to specify level for this parking action
+        if level is not None:
+            self.level = level
+
         slot = self.get_empty_slot(ev)
         if slot is None:
             return None

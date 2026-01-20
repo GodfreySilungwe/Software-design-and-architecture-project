@@ -12,12 +12,12 @@ lot = ParkingLot(3, 2, 1)
 presenter = ParkingPresenter(lot, RegularVehicleFactory(), ElectricVehicleFactory(), ChargingServiceClient())
 
 factory = RegularVehicleFactory()
-res = presenter.park_vehicle(factory, 'Car', 'ABC123', 'Toyota', 'Corolla', 'Blue')
+res = presenter.park_vehicle(factory, 'Car', 'ABC123', 'Toyota', 'Corolla', 'Blue', 1)
 print('Park result:', res)
 print('Status:', presenter.get_status())
 
 # Park an EV
 efac = ElectricVehicleFactory()
-res2 = presenter.park_vehicle(efac, 'Car', 'EV001', 'Tesla', 'Model3', 'Red')
+res2 = presenter.park_vehicle(efac, 'Car', 'EV001', 'Tesla', 'Model3', 'Red', 1)
 print('Park EV result:', res2)
 print('Status after EV:', presenter.get_status())

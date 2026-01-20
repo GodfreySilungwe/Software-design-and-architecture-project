@@ -51,6 +51,7 @@ class ParkingUI:
         self.color = tk.StringVar()
         self.vehicle_category = tk.StringVar(value="Car")
         self.is_electric = tk.IntVar()
+        self.park_level = tk.StringVar(value=self.level.get())
 
         tk.Label(self.root, text="Registration No").grid(row=7, column=0)
         tk.Entry(self.root, textvariable=self.reg).grid(row=7, column=1)
@@ -67,71 +68,75 @@ class ParkingUI:
         tk.OptionMenu(
             self.root,
             self.vehicle_category,
-            "Car", "Motorcycle", "Bus"
+            "Car", "Motorcycle"
         ).grid(row=11, column=1)
+
+        # Park level moved into the main form (keeps two-column layout)
+        tk.Label(self.root, text="Park Level").grid(row=12, column=0)
+        tk.Entry(self.root, textvariable=self.park_level, width=10).grid(row=12, column=1)
 
         tk.Checkbutton(
             self.root,
             text="Electric Vehicle",
             variable=self.is_electric
-        ).grid(row=12, column=1)
+        ).grid(row=13, column=1)
 
         tk.Button(
             self.root,
             text="Park Vehicle",
             command=self.park_vehicle
-        ).grid(row=13, column=1)
+        ).grid(row=14, column=1)
 
         tk.Button(
             self.root,
             text="Show Status",
             command=self.show_status
-        ).grid(row=14, column=1)
+        ).grid(row=15, column=1)
 
         # Separator
         tk.Label(self.root, text="=" * 40).grid(row=15, column=0, columnspan=2)
 
         # ===== REMOVE VEHICLE SECTION =====
-        tk.Label(self.root, text="=== Remove Vehicle ===", font=("Arial", 10, "bold")).grid(row=16, column=0, columnspan=2, pady=5)
+        tk.Label(self.root, text="=== Remove Vehicle ===", font=("Arial", 10, "bold")).grid(row=17, column=0, columnspan=2, pady=5)
         
-        tk.Label(self.root, text="Slot Number").grid(row=17, column=0)
+        tk.Label(self.root, text="Slot Number").grid(row=18, column=0)
         self.remove_slot = tk.StringVar()
-        tk.Entry(self.root, textvariable=self.remove_slot).grid(row=17, column=1)
+        tk.Entry(self.root, textvariable=self.remove_slot).grid(row=18, column=1)
         
         tk.Button(
             self.root,
             text="Remove Vehicle",
             command=self.remove_vehicle
-        ).grid(row=18, column=0, columnspan=2, sticky="ew")
+        ).grid(row=19, column=0, columnspan=2, sticky="ew")
 
         # ===== QUERY SECTION =====
-        tk.Label(self.root, text="=== Query Vehicles ===", font=("Arial", 10, "bold")).grid(row=19, column=0, columnspan=2, pady=5)
+        tk.Label(self.root, text="=== Query Vehicles ===", font=("Arial", 10, "bold")).grid(row=20, column=0, columnspan=2, pady=5)
         
-        tk.Label(self.root, text="Search by Color").grid(row=20, column=0)
+        tk.Label(self.root, text="Search by Color").grid(row=21, column=0)
         self.query_color = tk.StringVar()
-        tk.Entry(self.root, textvariable=self.query_color).grid(row=20, column=1)
+        tk.Entry(self.root, textvariable=self.query_color).grid(row=21, column=1)
         
         tk.Button(
             self.root,
             text="Get Slots by Color",
             command=self.get_slots_by_color
-        ).grid(row=21, column=0)
+        ).grid(row=22, column=0)
         
         tk.Button(
             self.root,
             text="Get Registration by Color",
             command=self.get_regs_by_color
-        ).grid(row=21, column=1)
+        ).grid(row=22, column=1)
         
-        tk.Label(self.root, text="Search by Registration").grid(row=22, column=0)
+        tk.Label(self.root, text="Search by Registration").grid(row=23, column=0)
         self.query_reg = tk.StringVar()
-        tk.Entry(self.root, textvariable=self.query_reg).grid(row=22, column=1)
+        tk.Entry(self.root, textvariable=self.query_reg).grid(row=23, column=1)
         
         tk.Button(
             self.root,
             text="Get Slot by Registration",
             command=self.get_slot_by_reg
-        ).grid(row=23, column=0, columnspan=2, sticky="ew")
+        ).grid(row=24, column=0, columnspan=2, sticky="ew")
 
         # Separator
         tk.Label(self.root, text="=" * 40).grid(row=24, column=0, columnspan=2)
@@ -142,12 +147,12 @@ class ParkingUI:
         tk.Label(self.root, text="Charge RegNo").grid(row=26, column=0)
         self.charge_reg = tk.StringVar()
         tk.Entry(self.root, textvariable=self.charge_reg).grid(row=26, column=1)
-        tk.Button(self.root, text="Start Charging", command=self.start_charging).grid(row=27, column=0)
-        tk.Button(self.root, text="Stop Charging", command=self.stop_charging).grid(row=27, column=1)
-        tk.Button(self.root, text="Check Charge Status", command=self.check_charge_status).grid(row=28, column=0, columnspan=2, sticky="ew")
+        tk.Button(self.root, text="Start Charging", command=self.start_charging).grid(row=28, column=0)
+        tk.Button(self.root, text="Stop Charging", command=self.stop_charging).grid(row=28, column=1)
+        tk.Button(self.root, text="Check Charge Status", command=self.check_charge_status).grid(row=29, column=0, columnspan=2, sticky="ew")
 
         self.output = tk.Text(self.root, width=90, height=15)
-        self.output.grid(row=29, column=0, columnspan=2, pady=5)
+        self.output.grid(row=30, column=0, columnspan=2, pady=5)
 
     def create_parking_lot(self):
         try:
@@ -172,13 +177,20 @@ class ParkingUI:
         )
 
         try:
+            # parse park level input
+            level = None
+            park_level_val = self.park_level.get()
+            if park_level_val:
+                level = int(park_level_val)
+
             result = self.presenter.park_vehicle(
                 factory,
                 self.vehicle_category.get(),
                 self.reg.get(),
                 self.make.get(),
                 self.model.get(),
-                self.color.get()
+                self.color.get(),
+                level
             )
         except ValueError as e:
             messagebox.showerror("Error", str(e))
@@ -193,10 +205,10 @@ class ParkingUI:
         self.output.delete("1.0", tk.END)
         self.output.insert(
             tk.END,
-            "Slot\tType\tRegNo\tColor\tMake\tModel\n"
+            "Slot\tLevel\tType\tRegNo\tColor\tMake\tModel\n"
         )
-        for slot, level, vehicle in self.presenter.get_status():
-            line = f"{slot}\t{vehicle.getType()}\t{vehicle.regnum}\t{vehicle.color}\t{vehicle.make}\t{vehicle.model}"
+        for slot, lvl, vehicle in self.presenter.get_status():
+            line = f"{slot}\t{lvl}\t{vehicle.getType()}\t{vehicle.regnum}\t{vehicle.color}\t{vehicle.make}\t{vehicle.model}"
             self.output.insert(tk.END, line + "\n")
 
     def remove_vehicle(self):

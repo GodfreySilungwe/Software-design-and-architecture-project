@@ -14,18 +14,9 @@ sequenceDiagram
     User->>ParkingUI: park_vehicle()
     activate ParkingUI
     
-    ParkingUI->>ParkingUI: Get input: regnum, make,<br/>model, color, vehicle_type
+    ParkingUI->>ParkingUI: Get input: regnum, make,<br/>model, color, vehicle_type, level<br/>Instantiate factory
     
-    ParkingUI->>Factory: create(vehicle_type, regnum, make, model, color)
-    activate Factory
-    Factory->>Vehicle: __init__(regnum, make, model, color)
-    activate Vehicle
-    Vehicle->>Vehicle: Set attributes
-    deactivate Vehicle
-    Factory-->>ParkingUI: Car instance
-    deactivate Factory
-    
-    ParkingUI->>Presenter: park_vehicle(factory, vehicle_type,<br/>regnum, make, model, color)
+    ParkingUI->>Presenter: park_vehicle(factory, vehicle_type,<br/>regnum, make, model, color, level)
     activate Presenter
     
     Presenter->>Factory: create(vehicle_type, regnum, make, model, color)
@@ -33,7 +24,7 @@ sequenceDiagram
     Factory-->>Presenter: Vehicle instance
     deactivate Factory
     
-    Presenter->>ParkingLot: park(vehicle, ev=False)
+    Presenter->>ParkingLot: park(vehicle, ev=False, level=level)
     activate ParkingLot
     
     ParkingLot->>ParkingLot: get_empty_slot(ev=False)
@@ -153,25 +144,9 @@ sequenceDiagram
     User->>ParkingUI: park_vehicle(is_electric=True)
     activate ParkingUI
     
-    ParkingUI->>ParkingUI: Get input: regnum, make,<br/>model, color, vehicle_type
+    ParkingUI->>ParkingUI: Get input: regnum, make,<br/>model, color, vehicle_type, level<br/>Instantiate factory
     
-    ParkingUI->>Factory: create(vehicle_type, regnum, make, model, color)
-    activate Factory
-    
-    Factory->>Vehicle: __init__(regnum, make, model, color)
-    activate Vehicle
-    
-    Vehicle->>Vehicle: Car.__init__()
-    Vehicle->>Mixin: ElectricMixin.__init__()
-    activate Mixin
-    Mixin->>Mixin: charge = 0
-    deactivate Mixin
-    deactivate Vehicle
-    
-    Factory-->>ParkingUI: ElectricCar instance
-    deactivate Factory
-    
-    ParkingUI->>Presenter: park_vehicle(factory, vehicle_type,<br/>regnum, make, model, color)
+    ParkingUI->>Presenter: park_vehicle(factory, vehicle_type,<br/>regnum, make, model, color, level)
     activate Presenter
     
     Presenter->>Factory: create(vehicle_type, regnum, make, model, color)
@@ -181,7 +156,7 @@ sequenceDiagram
     
     Presenter->>Presenter: hasattr(vehicle, "getCharge") → True
     
-    Presenter->>ParkingLot: park(vehicle, ev=True)
+    Presenter->>ParkingLot: park(vehicle, ev=True, level=level)
     activate ParkingLot
     ParkingLot->>ParkingLot: get_empty_slot(ev=True)
     ParkingLot->>ParkingLot: ev_slots[slot] = vehicle

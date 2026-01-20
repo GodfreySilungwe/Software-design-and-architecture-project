@@ -20,10 +20,10 @@ class ParkingPresenter:
         self.parking_lot.create_lot(capacity, ev_capacity, level)
 
     # Park
-    def park_vehicle(self, factory, vehicle_type, regnum, make, model, color):
+    def park_vehicle(self, factory, vehicle_type, regnum, make, model, color, level=None):
         vehicle = factory.create(vehicle_type, regnum, make, model, color)
         ev = hasattr(vehicle, "getCharge")
-        slot = self.parking_lot.park(vehicle, ev=ev)
+        slot = self.parking_lot.park(vehicle, ev=ev, level=level)
         if slot:
             return ParkResult(True, slot, "")
         return ParkResult(False, None, "Parking is full")

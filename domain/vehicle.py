@@ -21,7 +21,3 @@ class Motorcycle(Vehicle):
     def getType(self):
         return "Motorcycle"
 
-
-class Bus(Vehicle):
-    def getType(self):
-        return "Bus"

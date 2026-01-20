@@ -27,10 +27,6 @@ classDiagram
         +getType() str
     }
 
-    class Bus {
-        +getType() str
-    }
-
     class ElectricMixin {
         -charge: int
         +__init__() None
@@ -43,10 +39,6 @@ classDiagram
     }
 
     class ElectricMotorcycle {
-        +getType() str
-    }
-
-    class ElectricBus {
         +getType() str
     }
 
@@ -71,7 +63,7 @@ classDiagram
         -ev_slots: list
         +__init__(capacity: int, ev_capacity: int, level: int) None
         +get_empty_slot(ev: bool) Optional~int~
-        +park(vehicle: Vehicle, ev: bool) Optional~int~
+        +park(vehicle: Vehicle, ev: bool, level: int) Optional~int~
         +leave(slot_id: int, ev: bool) bool
         +status() List~Tuple~
         +create_lot(capacity: int, ev_capacity: int, level: int) None
@@ -87,7 +79,7 @@ classDiagram
         -charging_client: ChargingClient
         +__init__(parking_lot, regular_factory, electric_factory, charging_client) None
         +create_lot(capacity: int, ev_capacity: int, level: int) None
-        +park_vehicle(factory, vehicle_type: str, regnum, make, model, color) ParkResult
+        +park_vehicle(factory, vehicle_type: str, regnum, make, model, color, level: int) ParkResult
         +remove_vehicle(slot_number: int) bool
         +get_status() List~Tuple~
         +get_slots_by_color(color: str) List~int~
@@ -117,13 +109,10 @@ classDiagram
     %% Inheritance relationships
     Vehicle <|-- Car
     Vehicle <|-- Motorcycle
-    Vehicle <|-- Bus
     Car <|-- ElectricCar
     Motorcycle <|-- ElectricMotorcycle
-    Bus <|-- ElectricBus
     ElectricMixin <|-- ElectricCar
     ElectricMixin <|-- ElectricMotorcycle
-    ElectricMixin <|-- ElectricBus
 
     VehicleFactory <|-- RegularVehicleFactory
     VehicleFactory <|-- ElectricVehicleFactory
@@ -131,10 +120,8 @@ classDiagram
     %% Dependency and Association relationships
     RegularVehicleFactory ..> Car : creates
     RegularVehicleFactory ..> Motorcycle : creates
-    RegularVehicleFactory ..> Bus : creates
     ElectricVehicleFactory ..> ElectricCar : creates
     ElectricVehicleFactory ..> ElectricMotorcycle : creates
-    ElectricVehicleFactory ..> ElectricBus : creates
     
     ParkingLot "1" --> "0..*" Vehicle : contains
     ParkingLot --> ParkResult : returns
