@@ -91,7 +91,7 @@ class ParkingUI:
             self.root,
             text="Show Status",
             command=self.show_status
-        ).grid(row=15, column=1)
+        ).grid(row=14, column=2)
 
         # Separator
         tk.Label(self.root, text="=" * 40).grid(row=15, column=0, columnspan=2)
