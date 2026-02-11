@@ -18,73 +18,50 @@ MICROSERVICES_DIAGRAM = '''graph TB
     subgraph ParkingService["Parking Management Service"]
         ParkingAPI["REST API<br/>POST /parking/reserve<br/>GET /parking/status<br/>DELETE /parking/release"]
         ParkingBiz["Parking Business Logic"]
-        ParkingDB[(Parking DB<br/>parking_postgres)]
+        ParkingDB[(Parking Database)]
     end
     
     subgraph ChargingService["EV Charging Service"]
         ChargingAPI["REST API<br/>POST /charging/start<br/>POST /charging/stop<br/>GET /charging/status"]
         ChargingBiz["Charging Business Logic"]
-        ChargingDB[(Charging DB<br/>charging_postgres)]
-    end
-    
-    subgraph VehicleService["Vehicle Registry Service"]
-        VehicleAPI["REST API<br/>POST /vehicles/register<br/>GET /vehicles/:id<br/>PUT /vehicles/:id"]
-        VehicleBiz["Vehicle Business Logic"]
-        VehicleDB[(Vehicle DB<br/>vehicle_postgres)]
+        ChargingDB[(Charging Database)]
     end
     
     subgraph NotificationService["Notification Service"]
         NotificationAPI["Event Listeners<br/>charging.started<br/>charging.completed<br/>parking.reserved"]
         NotificationBiz["Notification Logic<br/>Email/SMS/Push"]
-        NotificationDB[(Notification DB<br/>notification_postgres)]
-    end
-    
-    subgraph PaymentService["Payment & Billing Service"]
-        PaymentAPI["REST API<br/>POST /payments/charge<br/>GET /payments/history<br/>POST /invoices/generate"]
-        PaymentBiz["Payment Business Logic"]
-        PaymentDB[(Payment DB<br/>payment_postgres)]
+        NotificationDB[(Notification Database)]
     end
     
     subgraph Analytics["Analytics & Monitoring Service"]
         AnalyticsAPI["REST API<br/>GET /analytics/usage<br/>GET /analytics/revenue<br/>GET /metrics/health"]
         AnalyticsBiz["Analytics Logic"]
-        AnalyticsDB[(Analytics DB<br/>analytics_postgres)]
+        AnalyticsDB[(Analytics Database)]
     end
     
     subgraph MessageBus["Message Bus / Event Stream"]
-        MessageQueue["RabbitMQ / Kafka<br/>Event Topics:<br/>parking.events<br/>charging.events<br/>vehicle.events<br/>payment.events"]
+        MessageQueue["Event Streaming Platform<br/>Event Topics:<br/>parking.events<br/>charging.events"]
     end
     
     subgraph Cache["Cache Layer"]
-        Redis["Redis Cache<br/>Vehicle Status<br/>Parking Slots<br/>Charging Rates"]
+        CacheStore["Distributed Cache<br/>Parking Slots<br/>Charging Rates"]
     end
     
     Client --> Gateway
     
     Gateway --> ParkingAPI
     Gateway --> ChargingAPI
-    Gateway --> VehicleAPI
-    Gateway --> PaymentAPI
     Gateway --> AnalyticsAPI
     
     ParkingAPI --> ParkingBiz
     ParkingBiz --> ParkingDB
-    ParkingBiz --> Redis
+    ParkingBiz --> CacheStore
     ParkingBiz --> MessageQueue
     
     ChargingAPI --> ChargingBiz
     ChargingBiz --> ChargingDB
-    ChargingBiz --> Redis
+    ChargingBiz --> CacheStore
     ChargingBiz --> MessageQueue
-    
-    VehicleAPI --> VehicleBiz
-    VehicleBiz --> VehicleDB
-    VehicleBiz --> Redis
-    VehicleBiz --> MessageQueue
-    
-    PaymentAPI --> PaymentBiz
-    PaymentBiz --> PaymentDB
-    PaymentBiz --> MessageQueue
     
     MessageQueue --> NotificationAPI
     MessageQueue --> AnalyticsAPI
@@ -98,9 +75,7 @@ MICROSERVICES_DIAGRAM = '''graph TB
     style APIGateway fill:#ff9999
     style ParkingService fill:#99ccff
     style ChargingService fill:#99ff99
-    style VehicleService fill:#ffcc99
     style NotificationService fill:#ff99ff
-    style PaymentService fill:#ffff99
     style Analytics fill:#99ffff
     style MessageBus fill:#ffcccc
     style Cache fill:#ccffcc'''
@@ -109,58 +84,165 @@ MICROSERVICES_DIAGRAM = '''graph TB
 DEPLOYMENT_DIAGRAM = '''graph TB
     subgraph Kubernetes["Kubernetes Cluster"]
         subgraph NS["Namespace: production"]
-            ParkingSvc["Parking Service<br/>Pod Replicas: 3"]
-            ChargingSvc["Charging Service<br/>Pod Replicas: 3"]
-            VehicleSvc["Vehicle Service<br/>Pod Replicas: 2"]
-            PaymentSvc["Payment Service<br/>Pod Replicas: 2"]
+            ParkingSvc["Parking Service<br/>Pod Replicas: 2"]
+            ChargingSvc["Charging Service<br/>Pod Replicas: 2"]
             NotificationSvc["Notification Service<br/>Pod Replicas: 2"]
             AnalyticsSvc["Analytics Service<br/>Pod Replicas: 1"]
         end
         
         subgraph Infra["Infrastructure Services"]
-            RabbitMQ["RabbitMQ Cluster<br/>3 Nodes"]
-            Redis["Redis Cluster<br/>3 Nodes"]
+            MessageBusCluster["Message Bus<br/>2 Nodes"]
+            CacheCluster["Cache Cluster<br/>2 Nodes"]
             APIGw["API Gateway<br/>Ingress Controller"]
         end
     end
     
     subgraph DBCluster["Database Cluster"]
-        ParkingDB["parking_postgres"]
-        ChargingDB["charging_postgres"]
-        VehicleDB["vehicle_postgres"]
-        PaymentDB["payment_postgres"]
-        NotificationDB["notification_postgres"]
-        AnalyticsDB["analytics_postgres"]
+        ParkingDB["Parking Database"]
+        ChargingDB["Charging Database"]
+        NotificationDB["Notification Database"]
+        AnalyticsDB["Analytics Database"]
     end
     
     ParkingSvc --> ParkingDB
     ChargingSvc --> ChargingDB
-    VehicleSvc --> VehicleDB
-    PaymentSvc --> PaymentDB
     NotificationSvc --> NotificationDB
     AnalyticsSvc --> AnalyticsDB
     
-    ParkingSvc --> RabbitMQ
-    ChargingSvc --> RabbitMQ
-    VehicleSvc --> RabbitMQ
-    PaymentSvc --> RabbitMQ
-    NotificationSvc --> RabbitMQ
-    AnalyticsSvc --> RabbitMQ
+    ParkingSvc --> MessageBusCluster
+    ChargingSvc --> MessageBusCluster
+    NotificationSvc --> MessageBusCluster
+    AnalyticsSvc --> MessageBusCluster
     
-    ParkingSvc --> Redis
-    ChargingSvc --> Redis
-    VehicleSvc --> Redis
+    ParkingSvc --> CacheCluster
+    ChargingSvc --> CacheCluster
     
     APIGw --> ParkingSvc
     APIGw --> ChargingSvc
-    APIGw --> VehicleSvc
-    APIGw --> PaymentSvc
     APIGw --> AnalyticsSvc
     
     style Kubernetes fill:#e1f5ff
     style Infra fill:#fff3e0
     style DBCluster fill:#f3e5f5
     style NS fill:#e0f2f1'''
+
+# Multi-Facility Architecture Diagram
+MULTI_FACILITY_DIAGRAM = '''graph TB
+    Clients["Client Applications<br/>(Mobile, Web, Desktop)"]
+    
+    subgraph APIGateway["API Gateway & Service Discovery"]
+        Gateway["API Gateway<br/>(Kong/Nginx)<br/>Routes by facility_id"]
+        ServiceReg["Service Registry<br/>(Consul/Eureka)"]
+    end
+    
+    subgraph FacilityCluster["Facility Management Layer"]
+        FacilityService["Facility Service<br/>Manages metadata<br/>locations, configs"]
+        FacilityDB["Facility Registry DB<br/>facilities_postgres"]
+    end
+    
+    subgraph ParkingServices["Parking Services - Multi-Facility"]
+        ParkingAPI["Parking API<br/>facility-aware<br/>/v2/facilities/:id/..."]
+        ParkingBiz["Business Logic<br/>per-facility ops"]
+        ParkingDBCluster["DB Shard Cluster<br/>parking_shard_1,2,3..."]
+    end
+    
+    subgraph ChargingServices["Charging Services - Multi-Facility"]
+        ChargingAPI["Charging API<br/>facility-aware<br/>/v2/facilities/:id/..."]
+        ChargingBiz["Business Logic<br/>per-facility ops"]
+        ChargingDBCluster["DB Shard Cluster<br/>charging_shard_1,2,3..."]
+    end
+    
+    subgraph MessageBus["Message Bus / Event Streaming"]
+        MessageQueue["RabbitMQ / Kafka<br/>Partitioned by facility_id<br/>parking.events.X<br/>charging.events.Y"]
+    end
+    
+    subgraph CachingLayer["Distributed Cache Layer"]
+        Redis["Redis Cluster<br/>Facility cache keys<br/>facility:downtown:slots"]
+    end
+    
+    Clients --> Gateway
+    Gateway --> ServiceReg
+    ServiceReg --> ParkingAPI
+    ServiceReg --> ChargingAPI
+    ServiceReg --> FacilityService
+    
+    Gateway --> FacilityService
+    FacilityService --> FacilityDB
+    
+    Gateway --> ParkingAPI
+    ParkingAPI --> ParkingBiz
+    ParkingBiz --> ParkingDBCluster
+    ParkingBiz --> Redis
+    ParkingBiz --> MessageQueue
+    
+    Gateway --> ChargingAPI
+    ChargingAPI --> ChargingBiz
+    ChargingBiz --> ChargingDBCluster
+    ChargingBiz --> Redis
+    ChargingBiz --> MessageQueue
+    
+    MessageQueue --> MessageQueue
+    
+    style APIGateway fill:#ff6b6b
+    style FacilityCluster fill:#ffd43b
+    style ParkingServices fill:#74c0fc
+    style ChargingServices fill:#69db7c
+    style MessageBus fill:#ffa94d
+    style CachingLayer fill:#90ee90'''
+
+# Multi-Facility Deployment Architecture Diagram
+MULTI_FACILITY_DEPLOYMENT_DIAGRAM = '''graph TB
+    subgraph K8S["Kubernetes Multi-Cluster"]
+        subgraph Region1["Region 1: US-West"]
+            subgraph NS1["Namespace: us-west"]
+                ParkingDC1["Parking Service<br/>Replicas: 3<br/>facility filter"]
+                ChargingDC1["Charging Service<br/>Replicas: 3<br/>facility filter"]
+            end
+            DBR1["Database Shard 1<br/>parking_shard_1<br/>charging_shard_1"]
+        end
+        
+        subgraph Region2["Region 2: US-East"]
+            subgraph NS2["Namespace: us-east"]
+                ParkingDC2["Parking Service<br/>Replicas: 3<br/>facility filter"]
+                ChargingDC2["Charging Service<br/>Replicas: 3<br/>facility filter"]
+            end
+            DBR2["Database Shard 2<br/>parking_shard_2<br/>charging_shard_2"]
+        end
+        
+        subgraph Central["Central Services"]
+            APIGw["API Gateway<br/>Global"]
+            MsgBus["RabbitMQ Cluster<br/>Partitioned"]
+            RedisGlobal["Redis Cluster<br/>Global"]
+            FacilityDB["Facility Registry<br/>Replicated"]
+        end
+    end
+    
+    ParkingDC1 --> DBR1
+    ChargingDC1 --> DBR1
+    
+    ParkingDC2 --> DBR2
+    ChargingDC2 --> DBR2
+    
+    ParkingDC1 --> RedisGlobal
+    ParkingDC2 --> RedisGlobal
+    
+    ParkingDC1 --> MsgBus
+    ChargingDC1 --> MsgBus
+    ParkingDC2 --> MsgBus
+    ChargingDC2 --> MsgBus
+    
+    APIGw --> ParkingDC1
+    APIGw --> ChargingDC1
+    APIGw --> ParkingDC2
+    APIGw --> ChargingDC2
+    
+    MsgBus --> FacilityDB
+    APIGw --> FacilityDB
+    
+    style Region1 fill:#e3f2fd
+    style Region2 fill:#f3e5f5
+    style Central fill:#fff3e0
+    style K8S fill:#f0f0f0'''
 
 def render_diagram(mermaid_code, output_path):
     """Render diagram using mermaid.ink service."""
@@ -190,6 +272,8 @@ def main():
     diagrams = [
         ("Microservices Architecture Overview", MICROSERVICES_DIAGRAM),
         ("Kubernetes Deployment Architecture", DEPLOYMENT_DIAGRAM),
+        ("Multi-Facility Architecture Overview", MULTI_FACILITY_DIAGRAM),
+        ("Multi-Facility Deployment Architecture", MULTI_FACILITY_DEPLOYMENT_DIAGRAM),
     ]
     
     print("Rendering Microservices Architecture Diagrams...\n")
