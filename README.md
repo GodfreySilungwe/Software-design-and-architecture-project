@@ -207,13 +207,80 @@ See [UML_Microservices_Architecture.md](UML_Microservices_Architecture.md) for d
 
 ## 🚀 Usage
 
+### Running the EV Charging Service Server
+
+The EV Charging Service is a Flask-based REST API that must be running separately for the parking system to handle electric vehicle charging operations.
+
+#### Prerequisites for Charging Service
+```bash
+# Install Flask
+pip install flask
+```
+
+#### Start the Charging Service
+Open a new terminal and run:
+
+```bash
+python services/ev_charging_service.py
+```
+
+Expected output:
+```
+WARNING in app.run() This is a development server. Do not use it in production deployments.
+Use a production WSGI server instead.
+* Running on http://127.0.0.1:5001
+```
+
+The service will be available at `http://localhost:5001` with the following endpoints:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/charge/start` | Start charging session for a vehicle |
+| `GET` | `/charge/status/<regnum>` | Get charging status for a vehicle |
+| `POST` | `/charge/stop` | Stop charging session for a vehicle |
+
+**Example Requests**:
+
+```bash
+# Start charging
+curl -X POST http://localhost:5001/charge/start \
+  -H "Content-Type: application/json" \
+  -d '{"regnum": "ABC123"}'
+
+# Get charging status
+curl http://localhost:5001/charge/status/ABC123
+
+# Stop charging
+curl -X POST http://localhost:5001/charge/stop \
+  -H "Content-Type: application/json" \
+  -d '{"regnum": "ABC123"}'
+```
+
 ### Running the Application
+
+Open another terminal and run:
 
 ```bash
 python main.py
 ```
 
-This will launch the Tkinter GUI for the parking management system.
+This will launch the Tkinter GUI for the parking management system. The application will automatically connect to the charging service running on port 5001.
+
+### Complete Startup Sequence
+
+For full functionality, open terminals in this order:
+
+**Terminal 1 - Start EV Charging Service:**
+```bash
+python services/ev_charging_service.py
+```
+
+**Terminal 2 - Start Parking Management UI:**
+```bash
+python main.py
+```
+
+The UI will now have full access to EV charging capabilities.
 
 ### Running Diagram Generation
 
